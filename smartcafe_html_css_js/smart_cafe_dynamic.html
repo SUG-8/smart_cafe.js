@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coffee Shop App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f3e5f5;
+      }
+      .menu,
+      .orders {
+        margin: 20px auto;
+        padding: 20px;
+        width: 50%;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      button {
+        background: purple;
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        margin: 5px;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Coffee Shop</h1>
+    <div class="menu">
+      <h2>Menu</h2>
+      <ul id="menu-list"></ul>
+    </div>
+    <div class="orders">
+      <h2>Orders</h2>
+      <button onclick="viewOrders()">View Orders</button>
+      <button onclick="analyzeOrders()">Analyze Orders</button>
+      <ul id="order-list" class="hidden"></ul>
+      <p id="order-analysis" class="hidden"></p>
+    </div>
+
+    <script>
+      const menu = {
+        1: "Coffee",
+        2: "Tea",
+        3: "Latte",
+        4: "Cappuccino",
+        5: "Espresso",
+      };
+      const prices = {
+        1: "£3",
+        2: "£2",
+        3: "£3.5",
+        4: "£2.5",
+        5: "£1.5",
+      };
+
+      function loadOrders() {
+        return JSON.parse(localStorage.getItem("orders")) || [];
+      }
+
+      function saveOrders(orders) {
+        localStorage.setItem("orders", JSON.stringify(orders));
+      }
+
+      function placeOrder(itemId) {
+        let orders = loadOrders();
+        orders.push({
+          item: menu[itemId],
+          timestamp: new Date().toISOString(),
+        });
+        saveOrders(orders);
+        alert(`Order for ${menu[itemId]} placed successfully!`);
+      }
+
+      function viewOrders() {
+        let orders = loadOrders();
+        let orderList = document.getElementById("order-list");
+        orderList.innerHTML = "";
+        orders.forEach((order) => {
+          let li = document.createElement("li");
+          li.textContent = `${order.item} - ${
+            prices[Object.keys(menu).find((key) => menu[key] === order.item)]
+          }`;
+          orderList.appendChild(li);
+        });
+        orderList.classList.remove("hidden");
+      }
+
+      function analyzeOrders() {
+        let orders = loadOrders();
+        if (orders.length === 0) {
+          alert("No orders found.");
+          return;
+        }
+        let counts = {};
+        orders.forEach(
+          (order) => (counts[order.item] = (counts[order.item] || 0) + 1)
+        );
+        let mostPopular = Object.entries(counts).reduce(
+          (a, b) => (a[1] > b[1] ? a : b),
+          ["None", 0]
+        );
+        document.getElementById(
+          "order-analysis"
+        ).textContent = `Most popular item: ${mostPopular[0]} (${mostPopular[1]} orders)`;
+        document.getElementById("order-analysis").classList.remove("hidden");
+      }
+
+      function renderMenu() {
+        let menuList = document.getElementById("menu-list");
+        for (let id in menu) {
+          let li = document.createElement("li");
+          li.innerHTML = `${menu[id]} - ${prices[id]} <button onclick="placeOrder('${id}')">Order</button>`;
+          menuList.appendChild(li);
+        }
+      }
+
+      renderMenu();
+    </script>
+  </body>
+</html>
